@@ -1,10 +1,10 @@
-import h4Serve from "./h4/server";
+import h4Router from "./h4/router";
 
 const routesDir = "./app/routes";
 const port = Number(process.env.PORT || "3000");
 
 try {
-	await h4Serve({
+	await h4Router({
 		routesDir,
 		port,
 		middleware: () => console.log("hello from global middleware"),

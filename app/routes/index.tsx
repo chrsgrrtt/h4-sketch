@@ -1,11 +1,7 @@
-import type { Middleware } from "../../h4/server";
+import { H4BaseRoute, type H4RouteHandler } from "../../h4/router";
 
-export const middleware: Middleware = () => {
-	console.log("hello from middleware");
-};
-
-export function get() {
-	return new Response("<h1>Hey Bobby</h1>", {
-		headers: { "Content-Type": "text/html" },
-	});
+export default class Route extends H4BaseRoute {
+	get: H4RouteHandler = ({ req }) => {
+		return new Response(`Hello, ${req.url}!`);
+	};
 }

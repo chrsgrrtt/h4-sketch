@@ -1,10 +1,29 @@
 import type { MatchedRoute, Server } from "bun";
 
-export type RouteHandler = (args: {
+export type H4RouteArgs = {
 	req: Request;
 	server: Server;
 	match: MatchedRoute;
-}) => Response | Promise<Response>;
+};
+
+export type H4MiddlewareArgs = {
+	req: Request;
+	server: Server;
+};
+
+export type H4RouteHandler = (
+	args: H4RouteArgs,
+) => Promise<Response> | Response;
+export type H4MiddlewareHandler = (args: H4MiddlewareArgs) => void;
+
+export abstract class H4BaseRoute {
+	middleware?: H4MiddlewareHandler;
+	get?: H4RouteHandler;
+	post?: H4RouteHandler;
+	put?: H4RouteHandler;
+	patch?: H4RouteHandler;
+	delete?: H4RouteHandler;
+}
 
 function logRequest(req: Request, status: number) {
 	const colours = {
@@ -26,21 +45,14 @@ function logRequest(req: Request, status: number) {
 	);
 }
 
-export type Middleware = (args: {
-	req: Request;
-	server: Server;
-	match?: MatchedRoute;
-	// biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
-}) => Response | void | Promise<Response | void>;
-
-export default async function h4Serve({
+export default async function h4Router({
 	routesDir,
 	port = Number(process.env.PORT || 3000),
 	middleware,
 }: {
 	routesDir: string;
 	port?: number;
-	middleware?: Middleware;
+	middleware?: H4MiddlewareHandler;
 }) {
 	const router = new Bun.FileSystemRouter({
 		style: "nextjs",
@@ -50,37 +62,35 @@ export default async function h4Serve({
 	return Bun.serve({
 		port,
 		fetch: async (req, server) => {
+			if (middleware) await middleware({ req, server });
+
 			const match = router.match(req);
-
-			if (middleware) {
-				const result = await middleware({ req, server });
-
-				if (result instanceof Response) {
-					logRequest(req, result.status);
-					return result;
-				}
-			}
 
 			if (match) {
 				const { filePath } = match;
 
 				try {
-					const module = await import(filePath);
+					const RouteClass = (await import(filePath)).default;
+					const routeInstance: H4BaseRoute = new RouteClass();
 
-					const method = req.method.toLowerCase();
-					const handler: RouteHandler = module[method];
+					await routeInstance.middleware?.({
+						req,
+						server,
+					});
 
-					if (handler) {
-						const routeMiddleware: Middleware | undefined = module.middleware;
-						if (routeMiddleware) {
-							const result = await routeMiddleware({ req, server, match });
-							if (result instanceof Response) {
-								logRequest(req, result.status);
-								return result;
-							}
-						}
+					const method = req.method.toLowerCase() as
+						| "get"
+						| "post"
+						| "put"
+						| "patch"
+						| "delete";
 
-						const response = await handler({ req, server, match });
+					if (typeof routeInstance[method] === "function") {
+						const response = await routeInstance[method]({
+							req,
+							server,
+							match,
+						});
 						logRequest(req, response.status);
 						return response;
 					}
