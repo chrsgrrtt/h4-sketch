@@ -26,10 +26,22 @@ function logRequest(req: Request, status: number) {
 	);
 }
 
+export type Middleware = (args: {
+	req: Request;
+	server: Server;
+	match?: MatchedRoute;
+	// biome-ignore lint/suspicious/noConfusingVoidType: <explanation>
+}) => Response | void | Promise<Response | void>;
+
 export default async function h4Serve({
 	routesDir,
 	port = Number(process.env.PORT || 3000),
-}: { routesDir: string; port?: number }) {
+	middleware,
+}: {
+	routesDir: string;
+	port?: number;
+	middleware?: Middleware;
+}) {
 	const router = new Bun.FileSystemRouter({
 		style: "nextjs",
 		dir: routesDir,
@@ -40,6 +52,15 @@ export default async function h4Serve({
 		fetch: async (req, server) => {
 			const match = router.match(req);
 
+			if (middleware) {
+				const result = await middleware({ req, server });
+
+				if (result instanceof Response) {
+					logRequest(req, result.status);
+					return result;
+				}
+			}
+
 			if (match) {
 				const { filePath } = match;
 
@@ -47,9 +68,18 @@ export default async function h4Serve({
 					const module = await import(filePath);
 
 					const method = req.method.toLowerCase();
+					const handler: RouteHandler = module[method];
 
-					if (module[method]) {
-						const handler: RouteHandler = module[method];
+					if (handler) {
+						const routeMiddleware: Middleware | undefined = module.middleware;
+						if (routeMiddleware) {
+							const result = await routeMiddleware({ req, server, match });
+							if (result instanceof Response) {
+								logRequest(req, result.status);
+								return result;
+							}
+						}
+
 						const response = await handler({ req, server, match });
 						logRequest(req, response.status);
 						return response;
