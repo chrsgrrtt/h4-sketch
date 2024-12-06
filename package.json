@@ -1,0 +1,17 @@
+{
+  "name": "h4",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "dev": "bun run --hot index.ts"
+  }
+}
