@@ -1,38 +1,10 @@
-import type { MatchedRoute, Server } from "bun";
+import type { Server } from "bun";
 import log from "./logger";
-
-export type H4RouteArgs = {
-	req: Request;
-	server: Server;
-	match: MatchedRoute;
-};
-export type H4RouteHandler = (
-	args: H4RouteArgs,
-) => Promise<Response> | Response;
-
-export type H4MiddlewareArgs = {
-	req: Request;
-	server: Server;
-};
-export type H4MiddlewareHandler = (args: H4MiddlewareArgs) => void;
-
-export abstract class H4BaseRoute {
-	matchedRoute!: MatchedRoute;
-
-	get?: H4RouteHandler;
-	post?: H4RouteHandler;
-	put?: H4RouteHandler;
-	patch?: H4RouteHandler;
-	delete?: H4RouteHandler;
-}
+import type { H4BaseRoute, H4RouteHandler } from "./route";
 
 function logRequest(req: Request, status: number) {
 	const colour =
-		status >= 500
-			? "\x1b[31m" // RED
-			: status >= 400
-				? "\x1b[33m" // YELLOW
-				: "\x1b[32m"; // GREEN
+		status >= 500 ? "\x1b[31m" : status >= 400 ? "\x1b[33m" : "\x1b[32m";
 
 	log({
 		type: "REQUEST",
@@ -106,7 +78,7 @@ export default function h4Router({
 		log({
 			type: "INFO",
 			message: `Router running: http://localhost:${port}`,
-			colour: "\x1b[36m", // CYAN
+			colour: "\x1b[36m",
 		});
 	};
 }

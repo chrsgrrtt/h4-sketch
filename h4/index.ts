@@ -15,7 +15,7 @@ export async function h4(services: H4Service[]) {
 	log({
 		type: "INFO",
 		message: `Starting H4\n${asciiArt}`,
-		colour: "\x1b[35m", // MAGENTA
+		colour: "\x1b[35m",
 	});
 	await Promise.all(services.map((service) => service()));
 }

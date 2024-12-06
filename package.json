@@ -12,6 +12,7 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "dev": "bun run --hot index.ts"
+    "dev": "bun run --hot index.ts",
+    "build": "bun build --compile index.ts"
   }
 }
