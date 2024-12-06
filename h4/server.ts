@@ -1,14 +1,38 @@
+import type { MatchedRoute, Server } from "bun";
+
+export type RouteHandler = (args: {
+	req: Request;
+	server: Server;
+	match: MatchedRoute;
+}) => Response | Promise<Response>;
+
+function logRequest(req: Request, status: number) {
+	const colours = {
+		RESET: "\x1b[0m",
+		GREEN: "\x1b[32m",
+		YELLOW: "\x1b[33m",
+		RED: "\x1b[31m",
+	};
+
+	const statusColour =
+		status >= 500
+			? colours.RED
+			: status >= 400
+				? colours.YELLOW
+				: colours.GREEN;
+
+	console.log(
+		`[${new Date().toISOString()}] ${req.method} ${req.url} ${statusColour}${status}${colours.RESET}`,
+	);
+}
+
 export default async function h4Serve({
 	routesDir,
 	port = Number(process.env.PORT || 3000),
 }: { routesDir: string; port?: number }) {
-	const absoluteRoutesDir = routesDir.startsWith("/")
-		? routesDir
-		: `${process.cwd()}/${routesDir}`;
-
 	const router = new Bun.FileSystemRouter({
 		style: "nextjs",
-		dir: absoluteRoutesDir,
+		dir: routesDir,
 	});
 
 	return Bun.serve({
@@ -24,15 +48,23 @@ export default async function h4Serve({
 
 					const method = req.method.toLowerCase();
 
-					if (module[method]) return module[method]({ req, server, match });
+					if (module[method]) {
+						const handler: RouteHandler = module[method];
+						const response = await handler({ req, server, match });
+						logRequest(req, response.status);
+						return response;
+					}
 
+					logRequest(req, 405);
 					return new Response("Method Not Allowed", { status: 405 });
 				} catch (err) {
 					console.error(`Error loading route: ${filePath}`, err);
+					logRequest(req, 500);
 					return new Response("Internal Server Error", { status: 500 });
 				}
 			}
 
+			logRequest(req, 404);
 			return new Response("Not Found", { status: 404 });
 		},
 	});
