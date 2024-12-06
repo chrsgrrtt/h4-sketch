@@ -1,22 +1,13 @@
 import type { MatchedRoute, Server } from "bun";
 
-export type H4RouteArgs = {
-	req: Request;
-	server: Server;
-	match: MatchedRoute;
-};
-export type H4RouteHandler = (
-	args: H4RouteArgs,
-) => Promise<Response> | Response;
+export type H4RouteHandler = () => Promise<Response> | Response;
 
-export type H4MiddlewareArgs = {
-	req: Request;
-	server: Server;
-};
-export type H4MiddlewareHandler = (args: H4MiddlewareArgs) => void;
+export type H4MiddlewareHandler = () => void;
 
 export abstract class H4BaseRoute {
-	matchedRoute!: MatchedRoute;
+	match!: MatchedRoute;
+	req!: Request;
+	server!: Server;
 
 	get?: H4RouteHandler;
 	post?: H4RouteHandler;

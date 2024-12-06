@@ -40,7 +40,11 @@ export default function h4Router({
 
 					try {
 						const RouteClass = (await import(filePath)).default;
-						const routeInstance: H4BaseRoute = new RouteClass(match);
+						const routeInstance: H4BaseRoute = new RouteClass();
+
+						routeInstance.match = match;
+						routeInstance.req = req;
+						routeInstance.server = server;
 
 						const method = req.method.toLowerCase() as
 							| "get"
@@ -52,11 +56,7 @@ export default function h4Router({
 						if (typeof routeInstance[method] === "function") {
 							const handler = routeInstance[method] as H4RouteHandler;
 
-							const response = await handler({
-								req,
-								server,
-								match,
-							});
+							const response = await handler();
 							logRequest(req, response.status);
 							return response;
 						}
