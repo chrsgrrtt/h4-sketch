@@ -3,27 +3,29 @@ import log from "./logger";
 declare const self: Worker;
 
 self.onmessage = async (event: MessageEvent) => {
-	try {
-		const { filepath, props } = event.data;
+	const { id, filepath, props } = event.data;
 
+	try {
 		if (!filepath) throw new Error("Job file path not provided");
 
 		const JobClass = (await import(filepath)).default;
 
-		const jobInstance = new JobClass();
-		jobInstance.props = props;
+		const jobInstance = new JobClass({ props });
 
 		if (typeof jobInstance.run === "function") {
 			const result = await jobInstance.run(props);
 
-			return postMessage({ status: "success", result });
+			return postMessage({ status: "success", id, result });
 		}
 
 		throw new Error(
 			`${jobInstance.constructor.name} does not have a run method`,
 		);
 	} catch (error) {
-		log({ type: "ERROR", message: JSON.stringify(error), color: "\x1b[91m" });
-		postMessage({ status: "error", error: JSON.stringify(error) });
+		postMessage({
+			status: "error",
+			id,
+			error: (error as { message: string }).message,
+		});
 	}
 };

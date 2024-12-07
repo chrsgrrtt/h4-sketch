@@ -9,11 +9,23 @@ export const worker = new Worker(workerUrl);
 let isWorkerBusy = false;
 
 worker.onmessage = (event) => {
-	log({
-		type: "INFO",
-		message: `Worker execution: ${JSON.stringify(event.data)}`,
-		color: "\x1b[36m",
-	});
+	event.data.status === "success"
+		? log({
+				type: "INFO",
+				message: `Job ${event.data.id} updated with status: completed`,
+				color: "\x1b[32m",
+			})
+		: event.data.status === "error"
+			? log({
+					type: "ERROR",
+					message: `Job ${event.data.id} updated with status: failed, error: ${JSON.stringify(event.data.error)}`,
+					color: "\x1b[91m",
+				})
+			: log({
+					type: "INFO",
+					message: `Worker execution: ${JSON.stringify(event.data)}`,
+					color: "\x1b[36m",
+				});
 
 	isWorkerBusy = false;
 
@@ -130,5 +142,5 @@ function processNextJob() {
 		message: `Processing job: ${job.id}`,
 		color: "\x1b[36m",
 	});
-	worker.postMessage({ filepath: job.filepath, props: job.props });
+	worker.postMessage({ id: job.id, filepath: job.filepath, props: job.props });
 }

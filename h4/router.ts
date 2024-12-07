@@ -40,11 +40,11 @@ export default function h4Router({
 
 					try {
 						const RouteClass = (await import(filePath)).default;
-						const routeInstance: H4BaseRoute = new RouteClass();
-
-						routeInstance.match = match;
-						routeInstance.req = req;
-						routeInstance.server = server;
+						const routeInstance: H4BaseRoute = new RouteClass({
+							match,
+							req,
+							server,
+						});
 
 						const method = req.method.toLowerCase() as
 							| "get"

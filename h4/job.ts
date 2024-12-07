@@ -9,8 +9,12 @@ export type JobProps =
 	| JobProps[];
 
 export abstract class H4BaseJob<T extends JobProps = JobProps> {
-	filepath!: string;
-	props?: T;
+	abstract filepath: string;
+	props: T;
+
+	constructor({ props }: { props: T }) {
+		this.props = props;
+	}
 
 	queue() {
 		return queueJob({
