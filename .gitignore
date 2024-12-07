@@ -10,7 +10,11 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
+/storage/*
+!/storage/.keep
+
 # Caches
+
 
 .cache
 

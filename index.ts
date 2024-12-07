@@ -5,11 +5,4 @@ import h4Router from "./h4/router";
 const routesDir = "./app/routes";
 const port = Number(process.env.PORT || "3000");
 
-h4([
-	h4Router({
-		routesDir,
-		port,
-		middleware: () => console.log("hello from global middleware"),
-	}),
-	h4Queue(),
-]);
+h4([h4Router({ routesDir, port }), h4Queue()]);
