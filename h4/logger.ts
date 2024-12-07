@@ -1,11 +1,11 @@
 export default function log({
 	type,
 	message,
-	colour = "\x1b[0m",
+	color = "\x1b[0m",
 }: {
 	type: "INFO" | "REQUEST" | "ERROR";
 	message: string;
-	colour: string;
+	color: string;
 }) {
 	const timestamp = new Date().toISOString();
 
@@ -16,5 +16,5 @@ export default function log({
 				? console.info
 				: console.log;
 
-	logFunction(`${colour}[${timestamp}] [${type}] ${message}\x1b[0m`);
+	logFunction(`${color}[${timestamp}] [${type}] ${message}\x1b[0m`);
 }

@@ -12,7 +12,7 @@ worker.onmessage = (event) => {
 	log({
 		type: "INFO",
 		message: `Worker execution: ${JSON.stringify(event.data)}`,
-		colour: "\x1b[36m",
+		color: "\x1b[36m",
 	});
 
 	isWorkerBusy = false;
@@ -36,7 +36,7 @@ export default function h4Queue() {
 		log({
 			type: "INFO",
 			message: `Worker running at ${workerUrl}`,
-			colour: "\x1b[36m",
+			color: "\x1b[36m",
 		});
 
 		processNextJob();
@@ -59,7 +59,7 @@ export function queueJob({
 	log({
 		type: "INFO",
 		message: `Job queued: ${id}`,
-		colour: "\x1b[32m",
+		color: "\x1b[32m",
 	});
 
 	processNextJob();
@@ -101,7 +101,7 @@ export function updateJob({
 	log({
 		type: "INFO",
 		message: `Job ${id} updated with status: ${status}`,
-		colour: "\x1b[33m",
+		color: "\x1b[33m",
 	});
 }
 
@@ -114,7 +114,7 @@ function processNextJob() {
 		log({
 			type: "INFO",
 			message: "No pending jobs to process.",
-			colour: "\x1b[34m",
+			color: "\x1b[34m",
 		});
 		return;
 	}
@@ -128,7 +128,7 @@ function processNextJob() {
 	log({
 		type: "INFO",
 		message: `Processing job: ${job.id}`,
-		colour: "\x1b[36m",
+		color: "\x1b[36m",
 	});
 	worker.postMessage({ filepath: job.filepath, props: job.props });
 }

@@ -23,7 +23,7 @@ self.onmessage = async (event: MessageEvent) => {
 			`${jobInstance.constructor.name} does not have a run method`,
 		);
 	} catch (error) {
-		console.log(error);
+		log({ type: "ERROR", message: JSON.stringify(error), color: "\x1b[91m" });
 		postMessage({ status: "error", error: JSON.stringify(error) });
 	}
 };

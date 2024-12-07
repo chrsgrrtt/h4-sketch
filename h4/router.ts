@@ -3,13 +3,13 @@ import log from "./logger";
 import type { H4BaseRoute, H4RouteHandler } from "./route";
 
 function logRequest(req: Request, status: number) {
-	const colour =
+	const color =
 		status >= 500 ? "\x1b[31m" : status >= 400 ? "\x1b[33m" : "\x1b[32m";
 
 	log({
 		type: "REQUEST",
 		message: `${req.method} ${req.url} ${status}`,
-		colour,
+		color,
 	});
 }
 
@@ -64,7 +64,11 @@ export default function h4Router({
 						logRequest(req, 405);
 						return new Response("Method Not Allowed", { status: 405 });
 					} catch (err) {
-						console.error(`Error loading route: ${filePath}`, err);
+						log({
+							type: "ERROR",
+							message: `Error loading route: ${filePath}. ${JSON.stringify(err)}`,
+							color: "\x1b[91m",
+						});
 						logRequest(req, 500);
 						return new Response("Internal Server Error", { status: 500 });
 					}
@@ -78,7 +82,7 @@ export default function h4Router({
 		log({
 			type: "INFO",
 			message: `Router running: http://localhost:${port}`,
-			colour: "\x1b[36m",
+			color: "\x1b[36m",
 		});
 	};
 }
