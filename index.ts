@@ -11,7 +11,7 @@ h4([
 	h4Router({ controllersDir, port }),
 	h4Queue({ maxCompletedJobsCount: 100 }),
 	h4Scheduler({
-		tasks: [
+		jobs: [
 			{
 				cron: "* * * * *",
 				job: ScheduledJob,

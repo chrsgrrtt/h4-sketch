@@ -30,14 +30,14 @@ worker.onmessage = (event) => {
 				});
 };
 
-export default function h4Scheduler({ tasks }: { tasks: ScheduledTask[] }) {
+export default function h4Scheduler({ jobs }: { jobs: ScheduledTask[] }) {
 	return async () => {
 		log({
 			type: "INFO",
-			message: `Scheduler running ${tasks.length} task(s) at ${workerUrl}`,
+			message: `Scheduler running ${jobs.length} task(s) at ${workerUrl}`,
 			color: "cyan",
 		});
-		const taskConfigs = tasks.map((task) => ({
+		const taskConfigs = jobs.map((task) => ({
 			cron: task.cron,
 			filepath: new task.job().filepath,
 		}));
