@@ -1,5 +1,3 @@
-import log from "./logger";
-
 declare const self: Worker;
 
 self.onmessage = async (event: MessageEvent) => {

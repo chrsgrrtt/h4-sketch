@@ -3,8 +3,7 @@ import type { JobProps } from "./job";
 import log from "./logger";
 
 const workerUrl = new URL("./worker.ts", import.meta.url);
-
-export const worker = new Worker(workerUrl);
+const worker = new Worker(workerUrl);
 
 let isWorkerBusy = false;
 
@@ -32,7 +31,9 @@ worker.onmessage = (event) => {
 	processNextJob();
 };
 
-export default function h4Queue() {
+export default function h4Queue({
+	maxCompletedJobsCount,
+}: { maxCompletedJobsCount: number }) {
 	return async () => {
 		db.run(`
 			CREATE TABLE IF NOT EXISTS queue_v00001 (
@@ -51,6 +52,7 @@ export default function h4Queue() {
 			color: "\x1b[36m",
 		});
 
+		cleanUpCompletedJobs(maxCompletedJobsCount);
 		processNextJob();
 	};
 }
@@ -79,19 +81,19 @@ export function queueJob({
 	return id;
 }
 
+class QueuedJob {
+	id!: string;
+	filepath!: string;
+	props?: string | null;
+	status!: string;
+	error?: string | null;
+	queued_at!: string;
+}
+
 export function getQueuedJobs() {
 	return db
 		.query('SELECT * FROM queue_v00001 WHERE status = "pending"')
-		.as(
-			class QueuedJob {
-				id!: string;
-				filepath!: string;
-				props?: string | null;
-				status!: string;
-				error?: string | null;
-				queued_at!: string;
-			},
-		)
+		.as(QueuedJob)
 		.all()
 		.map((job) => ({
 			...job,
@@ -143,4 +145,22 @@ function processNextJob() {
 		color: "\x1b[36m",
 	});
 	worker.postMessage({ id: job.id, filepath: job.filepath, props: job.props });
+}
+
+function cleanUpCompletedJobs(maxCompletedJobsCount: number) {
+	const stmt = db.prepare(
+		`DELETE FROM queue_v00001 WHERE id IN (
+			SELECT id FROM queue_v00001 
+			WHERE status IN ('completed', 'errored') 
+			ORDER BY queued_at ASC 
+			LIMIT (SELECT COUNT(*) FROM queue_v00001 WHERE status IN ('completed', 'errored')) - ?
+		)`,
+	);
+	stmt.run(maxCompletedJobsCount);
+
+	log({
+		type: "INFO",
+		message: `Cleaned up completed jobs exceeding max rows: ${maxCompletedJobsCount}`,
+		color: "\x1b[33m",
+	});
 }
