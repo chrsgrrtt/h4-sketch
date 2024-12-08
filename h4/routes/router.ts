@@ -1,6 +1,6 @@
 import type { Server } from "bun";
-import log from "./logger";
-import type { H4BaseRoute, H4RouteHandler } from "./route";
+import log from "../logger";
+import type { H4BaseController, H4ControllerAction } from "./controller";
 
 function logRequest(req: Request, status: number) {
 	const color = status >= 500 ? "red" : status >= 400 ? "yellow" : "green";
@@ -13,18 +13,18 @@ function logRequest(req: Request, status: number) {
 }
 
 export default function h4Router({
-	routesDir,
+	controllersDir,
 	port = Number(process.env.PORT || 3000),
 	middleware,
 }: {
-	routesDir: string;
+	controllersDir: string;
 	port?: number;
 	middleware?: (args: { req: Request; server: Server }) => void;
 }) {
 	return async () => {
 		const router = new Bun.FileSystemRouter({
 			style: "nextjs",
-			dir: routesDir,
+			dir: controllersDir,
 		});
 
 		Bun.serve({
@@ -38,8 +38,8 @@ export default function h4Router({
 					const { filePath } = match;
 
 					try {
-						const RouteClass = (await import(filePath)).default;
-						const routeInstance: H4BaseRoute = new RouteClass({
+						const Controller = (await import(filePath)).default;
+						const controllerInstance: H4BaseController = new Controller({
 							match,
 							req,
 							server,
@@ -52,8 +52,8 @@ export default function h4Router({
 							| "patch"
 							| "delete";
 
-						if (typeof routeInstance[method] === "function") {
-							const handler = routeInstance[method] as H4RouteHandler;
+						if (typeof controllerInstance[method] === "function") {
+							const handler = controllerInstance[method] as H4ControllerAction;
 
 							const response = await handler();
 							logRequest(req, response.status);
@@ -65,7 +65,7 @@ export default function h4Router({
 					} catch (err) {
 						log({
 							type: "ERROR",
-							message: `Error loading route: ${filePath}. ${JSON.stringify(err)}`,
+							message: `Error loading controller: ${filePath}. ${JSON.stringify(err)}`,
 							color: "red",
 						});
 						logRequest(req, 500);

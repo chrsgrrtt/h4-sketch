@@ -1,6 +1,6 @@
-import db from "../db/queue";
+import db from "../../db/queue";
+import log from "../logger";
 import type { JobProps } from "./job";
-import log from "./logger";
 
 const workerUrl = new URL("worker.ts", import.meta.url);
 const worker = new Worker(workerUrl);

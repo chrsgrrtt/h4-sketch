@@ -1,10 +1,10 @@
 import type { MatchedRoute, Server } from "bun";
 
-export type H4RouteHandler = () => Promise<Response> | Response;
+export type H4ControllerAction = () => Promise<Response> | Response;
 
 export type H4MiddlewareHandler = () => void;
 
-export abstract class H4BaseRoute {
+export abstract class H4BaseController {
 	match: MatchedRoute;
 	req: Request;
 	server: Server;
@@ -19,9 +19,9 @@ export abstract class H4BaseRoute {
 		this.server = server;
 	}
 
-	get?: H4RouteHandler;
-	post?: H4RouteHandler;
-	put?: H4RouteHandler;
-	patch?: H4RouteHandler;
-	delete?: H4RouteHandler;
+	get?: H4ControllerAction;
+	post?: H4ControllerAction;
+	put?: H4ControllerAction;
+	patch?: H4ControllerAction;
+	delete?: H4ControllerAction;
 }
