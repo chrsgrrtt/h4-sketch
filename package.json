@@ -13,6 +13,6 @@
   },
   "scripts": {
     "dev": "bun run --hot ./index.ts",
-    "build": "bun build --compile ./index.ts ./h4/worker.ts --outfile run"
+    "build": "bun build --compile ./index.ts ./h4/queue/worker.ts ./h4/scheduler/worker.ts --outfile run"
   }
 }

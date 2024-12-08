@@ -1,4 +1,4 @@
-import { queueJob } from "./queue";
+import { queueJob } from "../queue/queue";
 
 export type JobProps =
 	| string
@@ -22,4 +22,6 @@ export abstract class H4BaseJob<T extends JobProps = JobProps> {
 			props: this.props,
 		});
 	}
+
+	abstract run: () => void;
 }
