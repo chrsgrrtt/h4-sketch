@@ -42,12 +42,12 @@ async function checkSchedule() {
 	const now = new Date();
 
 	for (const task of schedule) {
-		const JobClass = (await import(task.filepath)).default;
-		const jobInstance = new JobClass();
-		const jobName = jobInstance.constructor.name;
-
 		try {
 			if (shouldRunAtTime(task.cron, now)) {
+				const JobClass = (await import(task.filepath)).default;
+				const jobInstance = new JobClass();
+				const jobName = jobInstance.constructor.name;
+
 				postMessage({
 					status: "in_progress",
 					jobName,
