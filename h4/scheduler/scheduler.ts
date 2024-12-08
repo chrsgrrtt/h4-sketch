@@ -30,7 +30,7 @@ worker.onmessage = (event) => {
 				});
 };
 
-export default function q4Schedule({ tasks }: { tasks: ScheduledTask[] }) {
+export default function h4Scheduler({ tasks }: { tasks: ScheduledTask[] }) {
 	return async () => {
 		log({
 			type: "INFO",
