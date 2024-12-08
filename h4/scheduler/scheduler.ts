@@ -11,17 +11,23 @@ const workerUrl = new URL("worker.ts", import.meta.url);
 const worker = new Worker(workerUrl);
 
 worker.onmessage = (event) => {
-	event.data.status === "success"
+	event.data.status === "in_progress"
 		? log({
 				type: "INFO",
-				message: `Scheduled task executed successfully: ${event.data.jobName}`,
-				color: "green",
+				message: `Scheduled task ${event.data.jobName}: in_progress`,
+				color: "yellow",
 			})
-		: log({
-				type: "ERROR",
-				message: `Scheduled task failed: ${event.data.jobName}, error: ${JSON.stringify(event.data.error)}`,
-				color: "red",
-			});
+		: event.data.status === "error"
+			? log({
+					type: "ERROR",
+					message: `Scheduled task failed: error: ${JSON.stringify(event.data.error)}`,
+					color: "red",
+				})
+			: log({
+					type: "INFO",
+					message: `Scheduled task ${event.data.jobName}: completed`,
+					color: "green",
+				});
 };
 
 export default function q4Schedule({ tasks }: { tasks: ScheduledTask[] }) {

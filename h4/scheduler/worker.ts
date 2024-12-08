@@ -42,30 +42,30 @@ async function checkSchedule() {
 	const now = new Date();
 
 	for (const task of schedule) {
+		const JobClass = (await import(task.filepath)).default;
+		const jobInstance = new JobClass();
+		const jobName = jobInstance.constructor.name;
+
 		try {
 			if (shouldRunAtTime(task.cron, now)) {
-				const JobClass = (await import(task.filepath)).default;
-				const jobInstance = new JobClass();
+				postMessage({
+					status: "in_progress",
+					jobName,
+				});
 
 				const result = await jobInstance.run();
 
 				postMessage({
 					status: "success",
-					jobName: getJobName(task.filepath),
+					jobName,
 					result,
 				});
 			}
 		} catch (error) {
 			postMessage({
 				status: "error",
-				jobName: getJobName(task.filepath),
 				error: (error as { message: string }).message,
 			});
 		}
 	}
-}
-
-function getJobName(filepath: string): string {
-	const parts = filepath.split("/");
-	return parts[parts.length - 1].replace(".ts", "");
 }

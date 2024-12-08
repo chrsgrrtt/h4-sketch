@@ -7,7 +7,6 @@ self.onmessage = async (event: MessageEvent) => {
 		if (!filepath) throw new Error("Job file path not provided");
 
 		const JobClass = (await import(filepath)).default;
-
 		const jobInstance = new JobClass({ props });
 
 		if (typeof jobInstance.run === "function") {
