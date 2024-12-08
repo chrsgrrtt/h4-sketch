@@ -2,7 +2,7 @@ import db from "../db/queue";
 import type { JobProps } from "./job";
 import log from "./logger";
 
-const workerUrl = new URL("./worker.ts", import.meta.url);
+const workerUrl = new URL("worker.ts", import.meta.url);
 const worker = new Worker(workerUrl);
 
 let isWorkerBusy = false;
@@ -12,18 +12,18 @@ worker.onmessage = (event) => {
 		? log({
 				type: "INFO",
 				message: `Job ${event.data.id} updated with status: completed`,
-				color: "\x1b[32m",
+				color: "green",
 			})
 		: event.data.status === "error"
 			? log({
 					type: "ERROR",
 					message: `Job ${event.data.id} updated with status: failed, error: ${JSON.stringify(event.data.error)}`,
-					color: "\x1b[91m",
+					color: "red",
 				})
 			: log({
 					type: "INFO",
 					message: `Worker execution: ${JSON.stringify(event.data)}`,
-					color: "\x1b[36m",
+					color: "cyan",
 				});
 
 	isWorkerBusy = false;
@@ -49,7 +49,7 @@ export default function h4Queue({
 		log({
 			type: "INFO",
 			message: `Worker running at ${workerUrl}`,
-			color: "\x1b[36m",
+			color: "cyan",
 		});
 
 		cleanUpCompletedJobs(maxCompletedJobsCount);
@@ -73,7 +73,7 @@ export function queueJob({
 	log({
 		type: "INFO",
 		message: `Job queued: ${id}`,
-		color: "\x1b[32m",
+		color: "green",
 	});
 
 	processNextJob();
@@ -115,7 +115,7 @@ export function updateJob({
 	log({
 		type: "INFO",
 		message: `Job ${id} updated with status: ${status}`,
-		color: "\x1b[33m",
+		color: "yellow",
 	});
 }
 
@@ -128,7 +128,7 @@ function processNextJob() {
 		log({
 			type: "INFO",
 			message: "No pending jobs to process.",
-			color: "\x1b[34m",
+			color: "blue",
 		});
 		return;
 	}
@@ -142,7 +142,7 @@ function processNextJob() {
 	log({
 		type: "INFO",
 		message: `Processing job: ${job.id}`,
-		color: "\x1b[36m",
+		color: "cyan",
 	});
 	worker.postMessage({ id: job.id, filepath: job.filepath, props: job.props });
 }
@@ -161,6 +161,6 @@ function cleanUpCompletedJobs(maxCompletedJobsCount: number) {
 	log({
 		type: "INFO",
 		message: `Cleaned up completed jobs exceeding max rows: ${maxCompletedJobsCount}`,
-		color: "\x1b[33m",
+		color: "yellow",
 	});
 }
