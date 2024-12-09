@@ -14,7 +14,7 @@ export default class IndexController extends H4BaseController {
 			description: "hello",
 		});
 
-		const testRecord = await testRepository.find_by({ id });
+		const testRecord = await testRepository.findBy({ id });
 
 		return Response.json({ testRecord });
 	};

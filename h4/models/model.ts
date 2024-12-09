@@ -10,7 +10,7 @@ export class H4Repository<T extends H4BaseModel> {
 		public readonly db: Database = config.primaryDb,
 	) {}
 
-	find_by(params: Partial<T>) {
+	findBy(params: Partial<T>) {
 		const conditions = Object.keys(params)
 			.map((key) => `${key} = ?`)
 			.join(" AND ");
@@ -31,5 +31,9 @@ export class H4Repository<T extends H4BaseModel> {
 		const values: SQLQueryBindings[] = Object.values(params);
 
 		return stmt.get(...values) as T;
+	}
+
+	query(sql: string) {
+		return this.db.query(sql);
 	}
 }
