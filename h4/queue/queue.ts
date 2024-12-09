@@ -1,7 +1,8 @@
-import db from "../../db/queue";
+import config from "../../config";
+import type { JobProps } from "../jobs/job";
 import log from "../logger";
-import type { JobProps } from "./job";
 
+const { queueDb } = config;
 const workerUrl = new URL("worker.ts", import.meta.url);
 const worker = new Worker(workerUrl);
 
@@ -35,7 +36,7 @@ export default function h4Queue({
 	maxCompletedJobsCount,
 }: { maxCompletedJobsCount: number }) {
 	return async () => {
-		db.run(`
+		queueDb.run(`
 			CREATE TABLE IF NOT EXISTS queue_v00001 (
 				id TEXT PRIMARY KEY,
 				filepath TEXT NOT NULL,
@@ -61,7 +62,7 @@ export function queueJob({
 	filepath,
 	props = {},
 }: { filepath: string; props?: JobProps }) {
-	const stmt = db.prepare(
+	const stmt = queueDb.prepare(
 		"INSERT INTO queue_v00001 (id, filepath, props) VALUES (?, ?, ?)",
 	);
 
@@ -91,7 +92,7 @@ class QueuedJob {
 }
 
 export function getQueuedJobs() {
-	return db
+	return queueDb
 		.query('SELECT * FROM queue_v00001 WHERE status = "pending"')
 		.as(QueuedJob)
 		.all()
@@ -107,8 +108,10 @@ export function updateJob({
 	error,
 }: { id: string; status: string; error?: string }) {
 	const stmt = error
-		? db.prepare("UPDATE queue_v00001 SET status = ?, error = ? WHERE id = ?")
-		: db.prepare("UPDATE queue_v00001 SET status = ? WHERE id = ?");
+		? queueDb.prepare(
+				"UPDATE queue_v00001 SET status = ?, error = ? WHERE id = ?",
+			)
+		: queueDb.prepare("UPDATE queue_v00001 SET status = ? WHERE id = ?");
 
 	error ? stmt.run(status, error, id) : stmt.run(status, id);
 
@@ -148,7 +151,7 @@ function processNextJob() {
 }
 
 function cleanUpCompletedJobs(maxCompletedJobsCount: number) {
-	const stmt = db.prepare(
+	const stmt = queueDb.prepare(
 		`DELETE FROM queue_v00001 WHERE id IN (
 			SELECT id FROM queue_v00001 
 			WHERE status IN ('completed', 'errored') 
