@@ -1,7 +1,6 @@
 {
   "name": "h4",
   "module": "index.ts",
-  "type": "module",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "latest",
@@ -14,5 +13,6 @@
   "scripts": {
     "dev": "bun run --hot ./index.ts",
     "build": "bun build --compile ./index.ts ./h4/queue/worker.ts ./h4/scheduler/worker.ts --outfile run"
-  }
+  },
+  "type": "module"
 }

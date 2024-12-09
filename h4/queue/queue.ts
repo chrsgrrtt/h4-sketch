@@ -3,6 +3,7 @@ import type { JobProps } from "../jobs/job";
 import log from "../logger";
 
 const { queueDb } = config;
+
 const workerUrl = new URL("worker.ts", import.meta.url);
 const worker = new Worker(workerUrl);
 
