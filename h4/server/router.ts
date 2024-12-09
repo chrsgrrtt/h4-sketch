@@ -12,7 +12,7 @@ function logRequest(req: Request, status: number) {
 	});
 }
 
-export default function h4Router({
+export default function h4Server({
 	controllersDir,
 	port = Number(process.env.PORT || 3000),
 	middleware,
@@ -80,7 +80,7 @@ export default function h4Router({
 
 		log({
 			type: "INFO",
-			message: `Router running: http://localhost:${port}`,
+			message: `Server running: http://localhost:${port}`,
 			color: "cyan",
 		});
 	};

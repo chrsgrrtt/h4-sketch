@@ -1,4 +1,4 @@
-import { H4BaseController } from "../../h4/routes/controller";
+import { H4BaseController } from "../../h4/server/controller";
 import TestJob from "../jobs/test";
 
 export default class IndexController extends H4BaseController {
