@@ -4,12 +4,17 @@ import config from "../../config";
 export abstract class H4BaseModel {}
 
 type FieldType<T, K extends keyof T> = T[K];
+type OrderDirection = "ASC" | "DESC";
 
 class QueryBuilder<T> {
 	protected conditions: string[] = [];
 	protected values: SQLQueryBindings[] = [];
 	private limitValue?: number;
 	private offsetValue?: number;
+	private orderClauses: string[] = [];
+	private groupByClauses: string[] = [];
+	private havingClauses: string[] = [];
+	private joinClauses: string[] = [];
 
 	constructor(
 		protected table: string,
@@ -29,6 +34,19 @@ class QueryBuilder<T> {
 		} else {
 			this.conditions.push(`${String(field)} = ?`);
 			this.values.push(value as SQLQueryBindings);
+		}
+		return this;
+	}
+
+	orWhere(callback: (builder: QueryBuilder<T>) => void) {
+		const subBuilder = new QueryBuilder<T>(this.table, this.db, this.model);
+		callback(subBuilder);
+		if (subBuilder.conditions.length) {
+			if (this.conditions.length) {
+				this.conditions.push("OR");
+			}
+			this.conditions.push(`(${subBuilder.conditions.join(" AND ")})`);
+			this.values.push(...subBuilder.values);
 		}
 		return this;
 	}
@@ -53,6 +71,32 @@ class QueryBuilder<T> {
 		return this;
 	}
 
+	join<R>(table: string, on: string) {
+		this.joinClauses.push(`INNER JOIN ${table} ON ${on}`);
+		return this;
+	}
+
+	leftJoin<R>(table: string, on: string) {
+		this.joinClauses.push(`LEFT JOIN ${table} ON ${on}`);
+		return this;
+	}
+
+	orderBy<K extends keyof T>(field: K, direction: OrderDirection = "ASC") {
+		this.orderClauses.push(`${String(field)} ${direction}`);
+		return this;
+	}
+
+	groupBy<K extends keyof T>(field: K) {
+		this.groupByClauses.push(String(field));
+		return this;
+	}
+
+	having(condition: string, ...values: SQLQueryBindings[]) {
+		this.havingClauses.push(condition);
+		this.values.push(...values);
+		return this;
+	}
+
 	limit(value: number) {
 		this.limitValue = value;
 		return this;
@@ -64,13 +108,24 @@ class QueryBuilder<T> {
 	}
 
 	toSql() {
-		const whereClause =
-			this.conditions.length > 0
-				? `WHERE ${this.conditions.join(" AND ")}`
-				: "";
-		const limitClause = this.limitValue ? ` LIMIT ${this.limitValue}` : "";
-		const offsetClause = this.offsetValue ? ` OFFSET ${this.offsetValue}` : "";
-		return `SELECT * FROM ${this.table} ${whereClause}${limitClause}${offsetClause}`;
+		const parts = [
+			`SELECT * FROM ${this.table}`,
+			...this.joinClauses,
+			this.conditions.length ? `WHERE ${this.conditions.join(" ")}` : "",
+			this.groupByClauses.length
+				? `GROUP BY ${this.groupByClauses.join(", ")}`
+				: "",
+			this.havingClauses.length
+				? `HAVING ${this.havingClauses.join(" AND ")}`
+				: "",
+			this.orderClauses.length
+				? `ORDER BY ${this.orderClauses.join(", ")}`
+				: "",
+			this.limitValue ? `LIMIT ${this.limitValue}` : "",
+			this.offsetValue ? `OFFSET ${this.offsetValue}` : "",
+		].filter(Boolean);
+
+		return parts.join(" ");
 	}
 
 	first() {
