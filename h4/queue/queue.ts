@@ -1,3 +1,4 @@
+import { randomUUIDv7 } from "bun";
 import config from "../../config";
 import type { JobProps } from "../jobs/job";
 import log from "../logger";
@@ -67,7 +68,7 @@ export function queueJob({
 		"INSERT INTO queue_v00001 (id, filepath, props) VALUES (?, ?, ?)",
 	);
 
-	const id = Bun.randomUUIDv7();
+	const id = randomUUIDv7();
 	props
 		? stmt.run(id, filepath, JSON.stringify(props))
 		: stmt.run(id, filepath);

@@ -1,4 +1,4 @@
-import type { Server } from "bun";
+import { FileSystemRouter, type Server, serve } from "bun";
 import log from "../logger";
 import type { H4BaseController, H4ControllerAction } from "./controller";
 
@@ -22,12 +22,12 @@ export default function h4Server({
 	middleware?: (args: { req: Request; server: Server }) => void;
 }) {
 	return async () => {
-		const router = new Bun.FileSystemRouter({
+		const router = new FileSystemRouter({
 			style: "nextjs",
 			dir: controllersDir,
 		});
 
-		Bun.serve({
+		serve({
 			port,
 			fetch: async (req, server) => {
 				if (middleware) await middleware({ req, server });

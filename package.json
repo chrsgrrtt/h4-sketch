@@ -5,6 +5,7 @@
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "latest",
     "@types/react": "^19.0.0",
+    "dbmate": "^2.23.0",
     "react": "^19.0.0"
   },
   "peerDependencies": {
@@ -12,7 +13,8 @@
   },
   "scripts": {
     "dev": "bun run --hot ./index.ts",
-    "build": "bun build --compile ./index.ts ./h4/queue/worker.ts ./h4/scheduler/worker.ts --outfile run"
+    "build": "bun build --compile ./index.ts ./h4/queue/worker.ts ./h4/scheduler/worker.ts --outfile run",
+    "dbmate": "DATABASE_URL='sqlite:storage/primary.db' dbmate"
   },
   "type": "module"
 }

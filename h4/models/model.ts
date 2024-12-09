@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { Database, SQLQueryBindings } from "bun:sqlite";
 import config from "../../config";
 
 export abstract class H4BaseModel {}
@@ -14,25 +14,22 @@ export class H4Repository<T extends H4BaseModel> {
 		const conditions = Object.keys(params)
 			.map((key) => `${key} = ?`)
 			.join(" AND ");
+		const values: SQLQueryBindings[] = Object.values(params);
 
 		return this.db
 			.query(`SELECT * FROM ${this.table} WHERE ${conditions}`)
 			.as(this.model)
-			.get();
+			.get(...values);
 	}
 
-	all() {
-		return this.db.query(`SELECT * FROM ${this.table}`).as(this.model).all();
+	create(params: T) {
+		const columns = Object.keys(params);
+		const stmt = this.db.prepare(
+			`INSERT INTO ${this.table} (${columns.join(", ")}) VALUES (${columns.map(() => "?").join(", ")}) RETURNING *`,
+		);
+
+		const values: SQLQueryBindings[] = Object.values(params);
+
+		return stmt.get(...values) as T;
 	}
 }
-
-class TestModel extends H4BaseModel {
-	id!: string;
-	name!: string;
-	description!: string;
-}
-
-const testRepository = new H4Repository("test_table", TestModel);
-
-const result = testRepository.find_by({ name: "test", id: "123" });
-const invalid = testRepository.find_by({ invalid: "test" });
