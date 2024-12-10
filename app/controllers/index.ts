@@ -8,14 +8,12 @@ export default class IndexController extends H4BaseController {
 
 		const id = await testJob.queue();
 
-		await testRepository.create({
+		const record = await testRepository.create({
 			id,
 			name: "test",
 			description: "hello",
 		});
 
-		const testRecord = await testRepository.findBy({ id });
-
-		return Response.json({ testRecord });
+		return Response.json({ record });
 	};
 }

@@ -142,6 +142,25 @@ class QueryBuilder<T> {
 			.as(this.model)
 			.all(...this.values);
 	}
+
+	update(params: Partial<T>) {
+		const updates = Object.entries(params)
+			.map(([key]) => `${key} = ?`)
+			.join(", ");
+
+		const values: SQLQueryBindings[] = Object.values(params);
+		const sql = `
+		  UPDATE ${this.table}
+		  SET ${updates}
+		  ${this.conditions.length ? `WHERE ${this.conditions.join(" ")}` : ""}
+		  RETURNING *
+		`.trim();
+
+		return this.db
+			.query(sql)
+			.as(this.model)
+			.all(...[...values, ...this.values]);
+	}
 }
 
 export class H4Repository<T extends H4BaseModel> {
@@ -150,18 +169,6 @@ export class H4Repository<T extends H4BaseModel> {
 		public readonly model: new () => T,
 		public readonly db: Database = config.primaryDb,
 	) {}
-
-	findBy(params: Partial<T>) {
-		const conditions = Object.keys(params)
-			.map((key) => `${key} = ?`)
-			.join(" AND ");
-		const values: SQLQueryBindings[] = Object.values(params);
-
-		return this.db
-			.query(`SELECT * FROM ${this.table} WHERE ${conditions}`)
-			.as(this.model)
-			.get(...values);
-	}
 
 	create(params: T) {
 		const columns = Object.keys(params);

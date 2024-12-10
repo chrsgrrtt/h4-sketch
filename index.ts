@@ -13,7 +13,7 @@ h4([
 	h4Scheduler({
 		jobs: [
 			{
-				cron: "*/5 * * * *",
+				cron: "30 * * * *",
 				job: ScheduledJob,
 			},
 		],
