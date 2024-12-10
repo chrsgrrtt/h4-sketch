@@ -1,8 +1,14 @@
 import { H4BaseController } from "../../../h4/server/controller";
 import { testRepository } from "../../models/test";
 
-export default class SingleTestController extends H4BaseController {
+export default class TestController extends H4BaseController {
 	get = async () => {
+		const exists = await testRepository
+			.query()
+			.where("id", this.match.params.id)
+			.exists();
+		if (!exists) return new Response("not found", { status: 404 });
+
 		const testRecord = await testRepository
 			.query()
 			.where("id", this.match.params.id)

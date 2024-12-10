@@ -135,6 +135,17 @@ class QueryBuilder<T> {
 			.get(...this.values);
 	}
 
+	exists(): boolean {
+		const sql = `SELECT 1 FROM ${this.table}
+            ${this.joinClauses.length ? this.joinClauses.join(" ") : ""}
+            ${this.conditions.length ? `WHERE ${this.conditions.join(" ")}` : ""}
+            LIMIT 1`;
+
+		const result = this.db.query(sql).get(...this.values);
+
+		return result !== null;
+	}
+
 	all() {
 		const sql = this.toSql();
 		return this.db
