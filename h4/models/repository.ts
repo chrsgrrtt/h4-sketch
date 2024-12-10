@@ -161,6 +161,19 @@ class QueryBuilder<T> {
 			.as(this.model)
 			.all(...[...values, ...this.values]);
 	}
+
+	delete() {
+		const sql = `
+		  DELETE FROM ${this.table}
+		  ${this.conditions.length ? `WHERE ${this.conditions.join(" ")}` : ""}
+		  RETURNING *
+		`.trim();
+
+		return this.db
+			.query(sql)
+			.as(this.model)
+			.all(...this.values);
+	}
 }
 
 export class H4Repository<T extends H4BaseModel> {

@@ -21,4 +21,13 @@ export default class SingleTestController extends H4BaseController {
 
 		return Response.json({ result });
 	};
+
+	delete = async () => {
+		const result = await testRepository
+			.query()
+			.where("id", this.match.params.id)
+			.delete();
+
+		return Response.json({ result });
+	};
 }
